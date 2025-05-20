@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Dicionário</title>
+  <style>
+    :root {
+      --azul: #007bff;
+      --cinza-claro: #f8f9fa;
+      --cinza: #dee2e6;
+      --branco: #fff;
+      --vermelho: #dc3545;
+      --sombra: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--cinza-claro);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: var(--branco);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: var(--sombra);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    input[type="text"], button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--cinza);
+      box-sizing: border-box;
+    }
+
+    button {
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-primary {
+      background-color: var(--azul);
+      color: var(--branco);
+      font-weight: bold;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-danger {
+      background-color: var(--vermelho);
+      color: var(--branco);
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background-color: #a71d2a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid var(--cinza);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--cinza-claro);
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: var(--sombra);
+        padding: 10px;
+      }
+
+      td {
+        border: none;
+        padding: 8px;
+        position: relative;
+        padding-left: 50%;
+      }
+
+      td::before {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 45%;
+        font-weight: bold;
+      }
+
+      td:nth-of-type(1)::before { content: "Palavra"; }
+      td:nth-of-type(2)::before { content: "Tradução"; }
+      td:nth-of-type(3)::before { content: "Observações"; }
+      td:nth-of-type(4)::before { content: "Excluir"; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📘 Meu Dicionário</h1>
+
+    <h2>➕ Adicionar Nova Palavra</h2>
+    <form id="addForm">
+      <input type="text" id="palavra" placeholder="Palavra" required />
+      <input type="text" id="traducao" placeholder="Tradução" required />
+      <input type="text" id="obs" placeholder="Observações" />
+      <button type="submit" class="btn-primary">Adicionar</button>
+    </form>
+
+    <input type="text" id="searchInput" placeholder="🔍 Buscar..." onkeyup="filterTable()" />
+
+    <table>
+      <thead>
+        <tr>
+          <th>Palavra</th>
+          <th>Tradução</th>
+          <th>Observações</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let palavras = JSON.parse(localStorage.getItem('dicionario')) || [];
+
+    function salvar() {
+      localStorage.setItem('dicionario', JSON.stringify(palavras));
+    }
+
+    function atualizarTabela() {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+      palavras.forEach((p, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${p.palavra}</td>
+          <td>${p.traducao}</td>
+          <td>${p.obs}</td>
+          <td><button class="btn-danger" onclick="remover(${index})">Excluir</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function remover(index) {
+      if (confirm("Tem certeza que deseja excluir esta palavra?")) {
+        palavras.splice(index, 1);
+        salvar();
+        atualizarTabela();
+      }
+    }
+
+    function filterTable() {
+      const filtro = document.getElementById("searchInput").value.toLowerCase();
+      const linhas = document.getElementById("tableBody").getElementsByTagName("tr");
+      for (let linha of linhas) {
+        linha.style.display = linha.textContent.toLowerCase().includes(filtro) ? "" : "none";
+      }
+    }
+
+    document.getElementById("addForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nova = {
+        palavra: document.getElementById("palavra").value.trim(),
+        traducao: document.getElementById("traducao").value.trim(),
+        obs: document.getElementById("obs").value.trim(),
+      };
+      palavras.push(nova);
+      salvar();
+      atualizarTabela();
+      document.getElementById("addForm").reset();
+    });
+
+    atualizarTabela();
+  </script>
+</body>
+</html>
